@@ -36,9 +36,42 @@ func TestSortedDistances(t *testing.T) {
 	}
 }
 
+func TestSimilarityScores(t *testing.T) {
+	expected := []int{9, 4, 0, 0, 9, 9}
+	actual := slices.Collect(similarityScores(testFst, testSnd))
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("got %v, expected %v", actual, expected)
+	}
+}
+
+func TestOccurrences(t *testing.T) {
+	expected := map[LocationID]int{
+		LocationID(2): 0,
+		LocationID(3): 3,
+		LocationID(4): 1,
+		LocationID(1): 0,
+	}
+
+	actual := occurrences(testFst, testSnd)
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("got %v, expected %v", actual, expected)
+	}
+}
+
 func TestPartOne(t *testing.T) {
 	expected := 11
 	actual := PartOne(testFst, testSnd)
+
+	if actual != expected {
+		t.Errorf("got %v, expected %v", actual, expected)
+	}
+}
+
+func TestPartTwo(t *testing.T) {
+	expected := 31
+	actual := PartTwo(testFst, testSnd)
 
 	if actual != expected {
 		t.Errorf("got %v, expected %v", actual, expected)

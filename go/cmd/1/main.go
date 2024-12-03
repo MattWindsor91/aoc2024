@@ -1,14 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"iter"
 	"os"
 	"slices"
-	"strconv"
-	"strings"
+
+	aocutil "github.com/MattWindsor91/aoc2024"
 )
 
 type LocationID int
@@ -26,57 +25,30 @@ func main() {
 }
 
 func ReadLists(r io.Reader) (fst LocationList, snd LocationList, err error) {
-	scanner := bufio.NewScanner(r)
 	fst = LocationList{}
 	snd = LocationList{}
 
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		words := strings.Fields(line)
-		if len(words) != 2 {
-			return nil, nil, fmt.Errorf("invalid line: %q (got %d words)", line, len(words))
-		}
-
-		x, err := parseLocationID(words[0])
+	for ints, err := range aocutil.ReadIntMatrix(r) {
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("invalid line: %w", err)
 		}
-		fst = append(fst, x)
+		if len(ints) != 2 {
+			return nil, nil, fmt.Errorf("invalid line: %v (got %d words)", ints, len(ints))
+		}
 
-		y, err := parseLocationID(words[1])
-		if err != nil {
-			return nil, nil, err
-		}
-		snd = append(snd, y)
+		fst = append(fst, LocationID(ints[0]))
+		snd = append(snd, LocationID(ints[1]))
 	}
 
-	return fst, snd, scanner.Err()
-}
-
-func parseLocationID(word string) (LocationID, error) {
-	x, err := strconv.Atoi(word)
-	if err != nil {
-		return 0, fmt.Errorf("invalid location ID: %q (%w)", word, err)
-	}
-
-	return LocationID(x), nil
+	return fst, snd, nil
 }
 
 func PartOne(fst, snd LocationList) int {
-	return sum(sortedDistances(fst, snd))
+	return aocutil.Sum(sortedDistances(fst, snd))
 }
 
 func PartTwo(fst, snd LocationList) int {
-	return sum(similarityScores(fst, snd))
-}
-
-func sum(seq iter.Seq[int]) int {
-	total := 0
-	for x := range seq {
-		total += x
-	}
-	return total
+	return aocutil.Sum(similarityScores(fst, snd))
 }
 
 func sortedDistances(fstUnsorted, sndUnsorted LocationList) iter.Seq[int] {

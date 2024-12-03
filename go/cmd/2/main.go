@@ -22,6 +22,7 @@ func main() {
 	}
 
 	fmt.Println("part 1:", in.NumSafe())
+	fmt.Println("part 2:", in.NumSafeWithDampening())
 }
 
 func readInput(r io.Reader) (Input, error) {
@@ -40,6 +41,27 @@ func readInput(r io.Reader) (Input, error) {
 	}
 
 	return in, nil
+}
+
+// NumSafe counts the number of safe reports in an input.
+func (i Input) NumSafe() int {
+	return i.numSafeWith(Report.IsSafe)
+}
+
+// NumSafeWithDampening counts the number of safe reports in an input after dampening
+func (i Input) NumSafeWithDampening() int {
+	return i.numSafeWith(Report.IsSafeWithDampening)
+}
+
+func (i Input) numSafeWith(f func(Report) bool) int {
+	safeties := aocutil.Transform(slices.Values(i), func(x Report) int {
+		if f(x) {
+			return 1
+		} else {
+			return 0
+		}
+	})
+	return aocutil.Sum(safeties)
 }
 
 // IsSafe determines if a report is safe (is monotonic and in the 1-3 step bound)
@@ -69,14 +91,25 @@ func (r Report) IsSafe() bool {
 	return true
 }
 
-// NumSafe counts the number of safe reports in an input.
-func (i Input) NumSafe() int {
-	safeties := aocutil.Transform(slices.Values(i), func(x Report) int {
-		if x.IsSafe() {
-			return 1
-		} else {
-			return 0
+// IsSafeWithDampening determines if a report is safe after dampening.
+func (r Report) IsSafeWithDampening() bool {
+	if r.IsSafe() {
+		return true
+	}
+
+	_, safe := r.Dampen()
+	return safe
+}
+
+func (r Report) Dampen() (remove int, ok bool) {
+	// brute force time!
+
+	for i := range r {
+		attempt := slices.Delete(slices.Clone(r), i, i+1)
+		if attempt.IsSafe() {
+			return i, true
 		}
-	})
-	return aocutil.Sum(safeties)
+	}
+
+	return 0, false
 }
